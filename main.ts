@@ -22,6 +22,9 @@ input.onGesture(Gesture.Shake, function () {
     3
     )
 })
+function changeMood (change: number) {
+    organism.mood += change;
+}
 let print = function (text: string) {
     serial.writeLine(`[OUTPUT] (${input.runningTime()}) text`);
 }
@@ -132,6 +135,9 @@ class Organism {
     }
 }
 let organism = new Organism();
+let getMood = function() {
+    return organism.mood;
+}
 basic.forever(function () {
     while (true) {
         organism.request();
