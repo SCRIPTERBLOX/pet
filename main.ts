@@ -32,6 +32,7 @@ let error = function (text: string) {
     serial.writeLine(`[ERROR] (${input.runningTime()}) text`);
 }
 const enum dataType {
+    wantHistory,
     fullfilmentTime,
     moodGraph
 }
@@ -44,19 +45,40 @@ const enum faces {
 class Want {
     index: number;
     sound: SoundExpression;
+    name: string;
 
-    constructor(i: number, s: SoundExpression) {
+    constructor(i: number, s: SoundExpression, n: string) {
         this.index = i;
         this.sound = s;
+        this.name = n;
+    }
+}
+class DataHandler {
+    wantHistory: Want[];
+
+    constructor() {
+        this.wantHistory = [];
+    }
+
+    addData(dType: dataType, data: any) {
+
+    }
+
+    sendData(dType: dataType, data: any) {
+        switch (dType) {
+            case dataType.fullfilmentTime:
+                // Fulllfilment time, record timestamp + time
+                let packet = `ft:${data[0]},${data[1].name},${data[2]}`;
+        }
     }
 }
 let wants = [
-new Want(0, soundExpression.spring),
-new Want(1, soundExpression.giggle),
-new Want(2, soundExpression.yawn),
-new Want(3, soundExpression.hello)
+new Want(0, soundExpression.spring, "A"),
+new Want(1, soundExpression.giggle, "B"),
+new Want(2, soundExpression.yawn, "Sleep"),
+new Want(3, soundExpression.hello, "Play")
 ]
-let showFace = function (face: faces) {
+let showFace = function(face: faces) {
     switch (face) {
         case faces.happy:
             basic.showLeds(`
@@ -93,11 +115,11 @@ let showFace = function (face: faces) {
     }
 }
 class Organism {
-    wantHistory: Want[];
+    dataHandler: DataHandler;
     mood: number;
 
     constructor() {
-        this.wantHistory = [];
+        this.dataHandler = new DataHandler();
         this.mood = 50;
     }
 
@@ -108,30 +130,25 @@ class Organism {
         else showFace(faces.dead);
     }
 
-    request = function () {
+    request() {
         let want = wants[randint(0, wants.length - 1)];
         input.calibrateCompass();
 
         music.play(want.sound, music.PlaybackMode.UntilDone);
         basic.showNumber(want.index); // Remove when verified that sound works
-        let start = input.runningTime();
+        let start = input.runningTime(); // The time it made the request
 
         control.waitForEvent(want.index, want.index);
-        let end = input.runningTime();
+        let end = input.runningTime(); // The time the request was fulfilled
         
-        let diff = end - start;
+        let diff = end - start; // The fulfilment time in milliseconds
 
-        organism.wantHistory.push(want);
-        // TODO: Setup with data logging
-        print(`${organism.wantHistory[organism.wantHistory.length - 1].index}`);
+        this.setData(dataType.wantHistory, want); // Add to want history
+        this.setData(dataType.fullfilmentTime, [start, want, diff]); // Add fulfilmentTime
     }
 
-    sendData = function (dType: dataType, data: any) {
-        switch (dType) {
-            case dataType.fullfilmentTime:
-                // Fulllfilment time, record timestamp + time
-                let packet = `ft:${data[0]},${data[1]},${data[2]}`;
-        }
+    setData(dType: dataType, data: any) {
+        this.dataHandler.addData(dType, data);
     }
 }
 let organism = new Organism();
@@ -146,4 +163,3 @@ basic.forever(function () {
 control.inBackground(function () {
 	
 })
-// Test
