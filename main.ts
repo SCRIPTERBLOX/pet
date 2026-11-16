@@ -123,16 +123,16 @@ class Organism {
         this.mood = 50;
     }
 
-    showMood = function (mood: number) {
-        if (mood > 0 && mood < 25) showFace(faces.sad);
-        else if (mood >= 25 && mood < 75) showFace(faces.neutral);
-        else if (mood >= 75) showFace(faces.happy);
+    showMood() {
+        if (this.mood > 0 && this.mood < 25) showFace(faces.sad);
+        else if (this.mood >= 25 && this.mood < 75) showFace(faces.neutral);
+        else if (this.mood >= 75) showFace(faces.happy);
         else showFace(faces.dead);
     }
 
     request() {
         let want = wants[randint(0, wants.length - 1)];
-        input.calibrateCompass();
+        //input.calibrateCompass();
 
         music.play(want.sound, music.PlaybackMode.UntilDone);
         basic.showNumber(want.index); // Remove when verified that sound works
@@ -145,6 +145,7 @@ class Organism {
 
         this.setData(dataType.wantHistory, want); // Add to want history
         this.setData(dataType.fullfilmentTime, [start, want, diff]); // Add fulfilmentTime
+        this.mood += 10;
     }
 
     setData(dType: dataType, data: any) {
@@ -155,13 +156,24 @@ let organism = new Organism();
 let getMood = function() {
     return organism.mood;
 }
+
+let died = function() {
+
+}
+
 basic.forever(function () {
     while (true) {
         organism.request();
     }
 })
 control.inBackground(function () {
-	
+    while (true) {
+        basic.pause(1000)
+	    organism.mood -= 1;
+        organism.showMood();
+        if (organism.mood <= 0) {
+            died();
+        }
+    }
 })
 
-//e6rbsvc
