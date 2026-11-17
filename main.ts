@@ -3,25 +3,25 @@ input.onButtonPressed(Button.A, function () {
     0,
     0
     )
-})
+});
 input.onSound(DetectedSound.Loud, function () {
     control.raiseEvent(
     5,
     5
     )
-})
+});
 input.onButtonPressed(Button.B, function () {
     control.raiseEvent(
     1,
     1
     )
-})
+});
 input.onGesture(Gesture.Shake, function () {
     control.raiseEvent(
     3,
     3
     )
-})
+});
 function changeMood (change: number) {
     organism.mood += change;
 }
@@ -35,13 +35,13 @@ const enum dataType {
     wantHistory,
     fullfilmentTime,
     moodGraph
-}
+};
 const enum faces {
     happy,
     neutral,
     sad,
     dead
-}
+};
 class Want {
     index: number;
     sound: SoundExpression;
@@ -53,15 +53,47 @@ class Want {
         this.name = n;
     }
 }
+class FullfilmentTime {
+    want: Want;
+    start: number;
+    time: number;
+
+    constructor(w: Want, s: number, t: number) {
+        this.want = w;
+        this.start = s;
+        this.time = t;
+    }
+}
 class DataHandler {
     wantHistory: Want[];
+    fullfilmentTimes: FullfilmentTime[];
 
     constructor() {
         this.wantHistory = [];
     }
 
     addData(dType: dataType, data: any) {
+        switch (dType) {
+            case dataType.wantHistory:
+                this.wantHistory.push(data);
+            case dataType.fullfilmentTime:
+                this.fullfilmentTimes.push(new FullfilmentTime(data[1], data[0], data[2]));
+        }
+    }
 
+    connected() {
+        // Got connected by USB, send data over and delete
+        for (let i = 0; i < this.fullfilmentTimes.length; i++) {
+            // Check if we still have a connection
+            if (false) {
+                // Got disconnected, stop sending data
+                return;
+            }
+            // We must be still connected, send next packet
+            let want = this.fullfilmentTimes[this.fullfilmentTimes.length-1];
+            serial.writeLine(`ft:${want.start},${want.want.name},${want.time}`);
+            this.fullfilmentTimes.pop();
+        }
     }
 
     sendData(dType: dataType, data: any) {
@@ -73,11 +105,11 @@ class DataHandler {
     }
 }
 let wants = [
-new Want(0, soundExpression.spring, "A"),
-new Want(1, soundExpression.giggle, "B"),
-new Want(2, soundExpression.yawn, "Sleep"),
-new Want(3, soundExpression.hello, "Play")
-]
+    new Want(0, soundExpression.spring, "A"),
+    new Want(1, soundExpression.giggle, "B"),
+    new Want(2, soundExpression.yawn, "Sleep"),
+    new Want(3, soundExpression.hello, "Play")
+];
 let showFace = function(face: faces) {
     switch (face) {
         case faces.happy:
@@ -168,7 +200,7 @@ basic.forever(function () {
 })
 control.inBackground(function () {
     while (true) {
-        basic.pause(1000)
+        basic.pause(1000);
 	    organism.mood -= 1;
         organism.showMood();
         if (organism.mood <= 0) {
@@ -176,4 +208,3 @@ control.inBackground(function () {
         }
     }
 })
-
