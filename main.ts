@@ -53,57 +53,6 @@ class Want {
         this.name = n;
     }
 }
-class FullfilmentTime {
-    want: Want;
-    start: number;
-    time: number;
-
-    constructor(w: Want, s: number, t: number) {
-        this.want = w;
-        this.start = s;
-        this.time = t;
-    }
-}
-class DataHandler {
-    wantHistory: Want[];
-    fullfilmentTimes: FullfilmentTime[];
-
-    constructor() {
-        this.wantHistory = [];
-    }
-
-    addData(dType: dataType, data: any) {
-        switch (dType) {
-            case dataType.wantHistory:
-                this.wantHistory.push(data);
-            case dataType.fullfilmentTime:
-                this.fullfilmentTimes.push(new FullfilmentTime(data[1], data[0], data[2]));
-        }
-    }
-
-    connected() {
-        // Got connected by USB, send data over and delete
-        for (let i = 0; i < this.fullfilmentTimes.length; i++) {
-            // Check if we still have a connection
-            if (false) {
-                // Got disconnected, stop sending data
-                return;
-            }
-            // We must be still connected, send next packet
-            let want = this.fullfilmentTimes[this.fullfilmentTimes.length-1];
-            serial.writeLine(`ft:${want.start},${want.want.name},${want.time}`);
-            this.fullfilmentTimes.pop();
-        }
-    }
-
-    sendData(dType: dataType, data: any) {
-        switch (dType) {
-            case dataType.fullfilmentTime:
-                // Fulllfilment time, record timestamp + time
-                let packet = `ft:${data[0]},${data[1].name},${data[2]}`;
-        }
-    }
-}
 let wants = [
     new Want(0, soundExpression.spring, "A"),
     new Want(1, soundExpression.giggle, "B"),
@@ -147,11 +96,9 @@ let showFace = function(face: faces) {
     }
 }
 class Organism {
-    dataHandler: DataHandler;
     mood: number;
 
     constructor() {
-        this.dataHandler = new DataHandler();
         this.mood = 50;
     }
 
@@ -169,19 +116,14 @@ class Organism {
         music.play(want.sound, music.PlaybackMode.UntilDone);
         basic.showNumber(want.index); // Remove when verified that sound works
         let start = input.runningTime(); // The time it made the request
-
+        
         control.waitForEvent(want.index, want.index);
         let end = input.runningTime(); // The time the request was fulfilled
         
-        let diff = end - start; // The fulfilment time in milliseconds
+        let diff = end - start; // The fulfilment# time in milliseconds
 
-        this.setData(dataType.wantHistory, want); // Add to want history
-        this.setData(dataType.fullfilmentTime, [start, want, diff]); // Add fulfilmentTime
+        serial.writeLine(`ft:${start.toString()},${want.name},${diff.toString()}`); // Send fullfilment time
         this.mood += 10;
-    }
-
-    setData(dType: dataType, data: any) {
-        this.dataHandler.addData(dType, data);
     }
 }
 let organism = new Organism();
