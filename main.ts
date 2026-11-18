@@ -147,6 +147,8 @@ control.inBackground(function () {
         organism.showMood();
         if (organism.mood <= 0) {
             died();
+            break;
         }
+        serial.writeLine(`mg:${organism.mood}`)
     }
 })
