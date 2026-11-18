@@ -1,26 +1,14 @@
 input.onButtonPressed(Button.A, function () {
-    control.raiseEvent(
-    0,
-    0
-    )
+    control.raiseEvent(0, 0);
 });
 input.onSound(DetectedSound.Loud, function () {
-    control.raiseEvent(
-    5,
-    5
-    )
+    control.raiseEvent(5, 5);
 });
 input.onButtonPressed(Button.B, function () {
-    control.raiseEvent(
-    1,
-    1
-    )
+    control.raiseEvent(1, 1);
 });
 input.onGesture(Gesture.Shake, function () {
-    control.raiseEvent(
-    3,
-    3
-    )
+    control.raiseEvent(3, 3);
 });
 function changeMood (change: number) {
     organism.mood += change;
@@ -98,9 +86,7 @@ let showFace = function(face: faces) {
 class Organism {
     mood: number;
 
-    constructor() {
-        this.mood = 50;
-    }
+    constructor() { this.mood = 50; }
 
     showMood() {
         if (this.mood > 0 && this.mood < 25) showFace(faces.sad);
@@ -131,15 +117,11 @@ let getMood = function() {
     return organism.mood;
 }
 
-let died = function() {
-
-}
+let died = function() { }
 
 basic.forever(function () {
-    while (true) {
-        organism.request();
-    }
-})
+    while (true) organism.request();
+});
 control.inBackground(function () {
     while (true) {
         basic.pause(1000);
