@@ -10,15 +10,6 @@ input.onButtonPressed(Button.B, function () {
 input.onGesture(Gesture.Shake, function () {
     control.raiseEvent(3, 3);
 });
-function changeMood (change: number) {
-    organism.mood += change;
-}
-let print = function (text: string) {
-    serial.writeLine(`[OUTPUT] (${input.runningTime()}) text`);
-}
-let error = function (text: string) {
-    serial.writeLine(`[ERROR] (${input.runningTime()}) text`);
-}
 const enum dataType {
     wantHistory,
     fullfilmentTime,
@@ -47,6 +38,7 @@ let wants = [
     new Want(2, soundExpression.yawn, "Sleep"),
     new Want(3, soundExpression.hello, "Play")
 ];
+let toLoud = 100
 let showFace = function(face: faces) {
     switch (face) {
         case faces.happy:
@@ -112,19 +104,27 @@ class Organism {
         this.mood += 10;
     }
 }
-let organism = new Organism();
-let getMood = function() {
-    return organism.mood;
-}
+let died = function () { }
 
-let died = function() { }
+let organism = new Organism();
 
 basic.forever(function () {
     while (true) organism.request();
 });
+let soundDebounce = 0;
 control.inBackground(function () {
     while (true) {
         basic.pause(1000);
+        let currentSound = input.soundLevel()
+        if (soundDebounce <= 0) {
+            if (currentSound >= toLoud) {
+                // It is too loud
+                soundDebounce = 5;
+                organism.mood -= 25;
+                music.play(music.builtinPlayableSoundEffect(soundExpression.sad), music.PlaybackMode.UntilDone)
+            }
+        }
+        soundDebounce--;
 	    organism.mood -= 1;
         organism.showMood();
         if (organism.mood <= 0) {
