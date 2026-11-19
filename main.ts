@@ -10,6 +10,9 @@ input.onButtonPressed(Button.B, function () {
 input.onGesture(Gesture.Shake, function () {
     control.raiseEvent(3, 3);
 });
+input.onPinPressed(TouchPin.P0, function () {
+    control.raiseEvent(2, 2);
+});
 const enum dataType {
     wantHistory,
     fullfilmentTime,
